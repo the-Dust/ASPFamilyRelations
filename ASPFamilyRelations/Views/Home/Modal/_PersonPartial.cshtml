@@ -1,0 +1,32 @@
+﻿@model DataAccess.Entities.Person
+@using System.Globalization;
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
+
+@Html.HiddenFor(m => m.Id)
+@foreach (var prop in ViewData.ModelMetadata.Properties.OrderBy(x => x.DisplayName))
+{
+    if (prop.PropertyName != "Id")
+    {
+        <div class="form-group">
+            <label>@prop.DisplayName</label>
+            @if (prop.PropertyName == "BirthDate")
+            {
+                DateTime dt = Model?.BirthDate ?? DateTime.Now;
+                DateTimeFormatInfo dtfi = CultureInfo.CreateSpecificCulture("en-US").DateTimeFormat;
+                dtfi.DateSeparator = "-";
+                dtfi.ShortDatePattern = @"yyyy/MM/dd";
+                @Html.TextBox("BirthDate", String.Format("{0:d}", dt.ToString("d", dtfi)), new { @class = "datefield form-control", type = "date" })
+
+            }
+            else
+            {
+                @Html.TextBox(prop.PropertyName, null, new { @class = "form-control" })
+            }
+            @Html.ValidationMessage(prop.PropertyName)
+        </div>
+    }
+}

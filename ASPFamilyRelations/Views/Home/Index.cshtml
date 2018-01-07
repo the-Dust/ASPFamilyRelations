@@ -1,0 +1,184 @@
+﻿@model IEnumerable<DataAccess.Entities.Person>
+
+@{
+    ViewBag.Title = "Родственники";
+}
+
+
+<h3>База данных: родственники</h3>
+
+@if (Model.Count() != 0)
+{
+<table class="table table-bordered table-hover">
+    <tr>
+        <th>№</th>
+        <th>Фамилия</th>
+        <th>Имя</th>
+        <th>Отчество</th>
+        <th>Дата рождения</th>
+        <th>Страна</th>
+        <th>Город</th>
+        <th>Улица</th>
+        <th>Действие</th>
+    </tr>
+    @foreach (var line in Model)
+    {
+        <tr>
+            <td>@line.Id</td>
+            <td>@line.Surname</td>
+            <td>@line.Name</td>
+            <td>@line.Patronymic</td>
+            <td>@line.BirthDate.Value.ToShortDateString()</td>
+            <td>@line.Country</td>
+            <td>@line.City</td>
+            <td>@line.Street</td>
+            <td>
+                <button class="btn btn-xs btn-warning" title="Смотреть родственников" onclick="location.href='@Url.Action("GetRelations", "Home", new { id = line.Id })';return false;">
+                    <i class="glyphicon glyphicon-zoom-in"></i>
+                </button>
+                <button class="btn btn-xs btn-warning" title="Редактировать человека" onclick="showPersonModal(@line.Id)">
+                    <i class="glyphicon glyphicon-pencil"></i>
+                </button>
+                <button class="btn btn-xs btn-danger" title="Удалить человека" onclick="removePerson(@line.Id)">
+                    <i class="glyphicon glyphicon-remove"></i>
+                </button>
+            </td>
+
+        </tr>
+    }
+    <tr>
+        <td></td>
+        <td>@Html.DropDownList("Surname",
+                               new string[] { " " }.Concat(Model.Select(x=>x.Surname)).Distinct()
+                               .Select((e, i) => new SelectListItem
+                               {
+                                   Value = i.ToString(), Text = e
+                               }), new { @class = "form-control", id = "surnames" })
+        </td>
+        <td>
+            @Html.DropDownList("Name",
+                            new string[] { " " }.Concat(Model.Select(x => x.Name)).Distinct()
+                            .Select((e, i) => new SelectListItem
+                            {
+                                Value = i.ToString(),
+                                Text = e
+                            }), new { @class = "form-control", id = "names" })
+        </td>
+        <td>
+            @Html.DropDownList("Patronymic",
+                         new string[] { " " }.Concat(Model.Select(x => x.Patronymic)).Distinct()
+                         .Select((e, i) => new SelectListItem
+                         {
+                             Value = i.ToString(),
+                             Text = e
+                         }), new { @class = "form-control", id = "patronymics" })
+        </td>
+        <td>
+            @Html.DropDownList("Date",
+                         new string[] { " " }.Concat(Model.Select(x => x.BirthDate.Value.ToShortDateString())).Distinct()
+                         .Select((e, i) => new SelectListItem
+                         {
+                             Value = i.ToString(),
+                             Text = e
+                         }), new { @class = "form-control", id = "dates" })
+        </td>
+        <td>
+            @Html.DropDownList("Country",
+                         new string[] { " " }.Concat(Model.Select(x => x.Country)).Distinct()
+                         .Select((e, i) => new SelectListItem
+                         {
+                             Value = i.ToString(),
+                             Text = e
+                         }), new { @class = "form-control", id = "countries" })
+        </td>
+        <td>
+            @Html.DropDownList("City",
+                         new string[] { " " }.Concat(Model.Select(x => x.City)).Distinct()
+                         .Select((e, i) => new SelectListItem
+                         {
+                             Value = i.ToString(),
+                             Text = e
+                         }), new { @class = "form-control", id = "cities" })
+        </td>
+        <td>
+            @Html.DropDownList("Street",
+                         new string[] { " " }.Concat(Model.Select(x => x.Street)).Distinct()
+                         .Select((e, i) => new SelectListItem
+                         {
+                             Value = i.ToString(),
+                             Text = e
+                         }), new { @class = "form-control", id = "streets" })
+        </td>
+        <td></td>
+    </tr>
+</table>
+}
+else
+{
+    <h4>База данных пуста</h4>
+}
+
+
+<button class="btn btn-default" title="Добавить человека" onclick="showPersonModal(0)">
+    <i class="glyphicon glyphicon-plus"></i>
+</button>
+<button class="btn btn-default" title="Фильтровать людей" onclick="showFiltered()">
+    <i class="glyphicon glyphicon-filter"></i>
+</button>
+
+<button class="hidden" id="submitBtn" data-toggle="modal" data-target="#myModal"></button>
+<div id="modal-content">
+</div>
+
+@section Scripts{
+<script type="text/javascript">
+        function showPersonModal(id) {
+            $.ajax({
+                method: 'GET',
+                data: null,
+                url: '@Url.Action("Edit")' + '?id=' + id,
+                success: function (partialView) {
+                    $('#modal-content').empty().html(partialView);
+                    $('#submitBtn').click();
+            },
+            error: function(err){
+                console.log(err);
+            }
+            });
+        }
+
+        function showFiltered() {
+            var s = '?surname=' + $('#surnames option:selected').text();
+            var n = '&name=' + $('#names option:selected').text();
+            var p = '&patronymic=' + $('#patronymics option:selected').text();
+            var b = '&birthDate=' + $('#dates option:selected').text();
+            var co = '&country=' + $('#countries option:selected').text();
+            var ci = '&city=' + $('#cities option:selected').text();
+            var st = '&street=' + $('#streets option:selected').text();
+            var result = s + n + p + b + co + ci + st;
+            console.log($('#surnames').val());
+            location.href = '@Url.Action("ShowFiltered", "Home")' + result;
+            return false;
+
+        }
+
+        function removePerson(id) {
+            $.ajax({
+                method: 'POST',
+                data: null,
+                url: '@Url.Action("RemovePerson")' + '?id=' + id,
+                success: function (response) {
+                    if(response && response.IsRemoved)
+                    {
+                        window.location.href = window.location.href;
+                    }
+                },
+                error: function(){
+                    console.log(err);
+                },
+            });
+}
+</script>
+
+
+}

@@ -1,0 +1,12 @@
+﻿@model DataAccess.Entities.Person
+
+@foreach (var prop in ViewData.ModelMetadata.Properties.OrderBy(x => x.DisplayName))
+{
+    if (prop.PropertyName != "Id")
+    {
+        <div class="form-group">
+            <label>@prop.DisplayName: </label>
+                @Html.Display(prop.PropertyName, null, new { @class = "form-control" })
+        </div>
+    }
+}

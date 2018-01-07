@@ -1,0 +1,24 @@
+﻿@model DataAccess.Entities.Relation
+@using DataAccess.Entities
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
+
+@Html.HiddenFor(m => m.Id)
+@Html.HiddenFor(m => m.TargetPerson)
+@Html.HiddenFor(m => m.SourceId)
+
+
+<p>Человек:</p>
+<label>@ViewBag.Person</label>
+<p>является кем:</p>
+@Html.DropDownListFor(x => x.RelationNameId, (ViewBag.RelationNames as IEnumerable<string>)
+                          .Select((e, i) => new SelectListItem { Value = (i + 1).ToString(), Text = e }),
+                          new { @class = "form-control" })
+<br>
+<p>для человека</p>
+@Html.DropDownListFor(x => x.TargetId, (ViewBag.Persons as Person[])
+                          .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.ToString() }),
+                          new { @class = "form-control" })

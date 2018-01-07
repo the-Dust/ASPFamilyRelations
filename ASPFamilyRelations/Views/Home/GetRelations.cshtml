@@ -1,0 +1,106 @@
+﻿@model IEnumerable<DataAccess.Entities.Relation>
+
+@{
+    ViewBag.Title = "Родственники";
+}
+
+
+<h3>@ViewBag.Person.ToString() : родственники</h3>
+
+@if (Model.Count() != 0)
+{
+    <table class="table table-bordered table-hover">
+        <tr>
+            <th>№</th>
+            <th>Фамилия</th>
+            <th>Имя</th>
+            <th>Отчество</th>
+            <th>Кто ему</th>
+            <th>Действие</th>
+        </tr>
+        @foreach (var line in Model)
+        {
+            <tr>
+                <td>@line.Id</td>
+                <td>@line.TargetPerson.Surname</td>
+                <td>@line.TargetPerson.Name</td>
+                <td>@line.TargetPerson.Patronymic</td>
+                <td>@line.RelationName.MirrorName</td>
+                <td>
+                    <button class="btn btn-xs btn-warning" title="Карточка родственника" onclick="showDetailsModal(@line.TargetId)">
+                        <i class="glyphicon glyphicon-zoom-in"></i>
+                    </button>
+                    <button class="btn btn-xs btn-warning" title="Редактировать родство" onclick="showUpdateRelationModal(@line.Id,0)">
+                        <i class="glyphicon glyphicon-pencil"></i>
+                    </button>
+                    <button class="btn btn-xs btn-danger" title="Удалить родство" onclick="removeRelation(@line.Id)">
+                        <i class="glyphicon glyphicon-remove"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h4>База данных пуста</h4>
+}
+
+<button class="btn btn-default" title="Добавить родственника" onclick="showUpdateRelationModal(0, @ViewBag.Person.Id)">
+    <i class="glyphicon glyphicon-plus"></i>
+</button>
+
+<button class="hidden" id="submitBtn" data-toggle="modal" data-target="#myModal"></button>
+<div id="modal-content">
+</div>
+
+@section Scripts{
+<script type="text/javascript">
+        function showDetailsModal(id) {
+            $.ajax({
+                method: 'GET',
+                data: null,
+                url: '@Url.Action("Edit", "Home")' + '?id=' + id + '&details=true',
+                success: function (partialView) {
+                    $('#modal-content').empty().html(partialView);
+                    $('#submitBtn').click();
+            },
+            error: function(err){
+                console.log(err);
+            }
+            });
+        }
+
+        function showUpdateRelationModal(id, sourceId) {
+            $.ajax({
+                method: 'GET',
+                data: null,
+                url: '@Url.Action("Edit", "Relation")' + '?id=' + id + '&sourceId=' + sourceId,
+                success: function (partialView) {
+                    $('#modal-content').empty().html(partialView);
+                    $('#submitBtn').click();
+            },
+            error: function(err){
+                console.log(err);
+            }
+            });
+        }
+
+        function removeRelation(id) {
+            $.ajax({
+                method: 'POST',
+                data: null,
+                url: '@Url.Action("RemoveRelation", "Relation")' + '?id=' + id,
+                success: function (response) {
+                    if(response && response.IsRemoved)
+                    {
+                        window.location.href = window.location.href;
+                    }
+                },
+                error: function (err){
+                    console.log(err);
+                }
+            });
+        }
+</script>
+}
